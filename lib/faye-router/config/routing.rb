@@ -8,15 +8,15 @@ module FayeRouter
         @default  = false
         @matchers = {
           # builtin matchers
-          subscribe:   -> { message.channel === '/meta/subscribe' },
-          unsubscribe: -> { message.channel === '/meta/unsubscribe' },
-          event:       -> (type) { message.data['type'] && message.data['type'] == type }
+          subscribe:   -> { message['channel'] === '/meta/subscribe' },
+          unsubscribe: -> { message['channel'] === '/meta/unsubscribe' },
+          event:       -> (event) { message['data'] && message['data']['event'] == event }
         }
       end
 
       def channel(pattern, options, &block)
         ch_routing = ChannelRouting.new(@routes, @matchers, pattern, options)
-        ch_routing.instance_eval block if block_given?
+        ch_routing.instance_eval &block if block_given?
       end
 
       def publish(pattern, options = {})

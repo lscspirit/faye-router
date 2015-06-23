@@ -29,7 +29,7 @@ module FayeRouter
     #
 
     def routes(&block)
-      @routing.instance_eval block if block_given?
+      @routing.instance_eval &block if block_given?
     end
 
     private
@@ -45,7 +45,7 @@ module FayeRouter
           # if there is no matching route AND this is not a /meta message, then return an invalid channel error
           message['error'] = bayeux_error :channel_unknown, 'No route found for channel', 'faye-router', channel
         elsif route.is_a? FayeRouter::Config::Route
-          ctrl = spawn_controller route.controller, message, request
+          ctrl = spawn_controller route.controller, channel, message, request
           ctrl.perform_action route.action
         end
       end
@@ -64,11 +64,11 @@ module FayeRouter
       end
     end
 
-    def spawn_controller(controller, message, request)
+    def spawn_controller(controller, channel, message, request)
       klass = Kernel.const_get(controller)
       raise "#{controller} is not a FayeRouter::Controller" unless klass <= FayeRouter::Controller
 
-      klass.new message, request
+      klass.new channel, message, request
     end
   end
 end

@@ -9,7 +9,7 @@ module FayeRouter
     include FayeRouter::Bayeux::Error
 
     # Properties
-    attr_reader :message, :request
+    attr_reader :channel, :message, :request
 
     class << self; attr_accessor :filter_chain end
     self.filter_chain = FayeRouter::Filter::FilterChain.new
@@ -21,7 +21,8 @@ module FayeRouter
     end
 
     # Constructor
-    def initialize(msg, request)
+    def initialize(channel, msg, request)
+      @channel = channel
       @message = msg
       @request = request
     end

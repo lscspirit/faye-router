@@ -1,7 +1,7 @@
 module FayeRouter
   module Config
     class Route
-      attr_reader pattern, controller, action
+      attr_reader :pattern, :controller, :action
 
       def initialize(pattern, controller, action, matcher = nil, matcher_args = nil)
         @pattern      = pattern
@@ -18,7 +18,10 @@ module FayeRouter
 
       def exec_matcher?(message, request)
         return true if @matcher.nil?
-        OpenStruct.new({ message: message, request: request }).instance_exec *(Array.wrap(@matcher_args)), &@matcher
+        base = OpenStruct.new(message: message, request: request)
+        args = @matcher_args ? [@matcher_args].flatten : nil
+
+        args.nil? ? base.instance_exec(&@matcher) : base.instance_exec(*args, &@matcher)
       end
 
       private
