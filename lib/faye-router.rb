@@ -1,5 +1,8 @@
 require 'faye-router/version'
 
 module FayeRouter
-  # Your code goes here...
+  ROOT = File.expand_path(File.dirname(__FILE__))
+
+  autoload :Router,     File.join(ROOT, 'faye-router', 'router')
+  autoload :Controller, File.join(ROOT, 'faye-router', 'controller')
 end

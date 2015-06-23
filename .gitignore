@@ -10,3 +10,5 @@
 
 # Ruby Mine Project file
 .idea/
+
+.ruby-version
