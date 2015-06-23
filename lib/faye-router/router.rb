@@ -35,40 +35,40 @@ module FayeRouter
     private
 
     def route_message(message, request)
-      channel = extract_channel message
+      type, channel = extract_type_and_channel message
 
       # let all meta messages (except subscribe and unsubscribe) pass through
-      unless channel == :meta
-        route = @routing.route(channel, message, request)
+      unless type == :meta
+        route = @routing.route type, channel, message, request
 
-        if route === false
+        if route.allow == :block
           # if there is no matching route AND this is not a /meta message, then return an invalid channel error
           message['error'] = bayeux_error :channel_unknown, 'No route found for channel', 'faye-router', channel
-        elsif route.is_a? FayeRouter::Config::Route
-          ctrl = spawn_controller route.controller, channel, message, request
+        elsif route.allow == :route
+          ctrl = spawn_controller route.controller, type, channel, message, request
           ctrl.perform_action route.action
         end
       end
     end
 
-    def extract_channel(message)
+    def extract_type_and_channel(message)
       case message['channel']
         when '/meta/subscribe'
-          message['subscription']
+          return :subscribe, message['subscription']
         when '/meta/unsubscribe'
-          message['subscription']
+          return :unsubscribe, message['subscription']
         when /^\/meta\/.+$/
-          :meta
+          return :meta, nil
         else
-          message['channel']
+          return :publish, message['channel']
       end
     end
 
-    def spawn_controller(controller, channel, message, request)
+    def spawn_controller(controller, type, channel, message, request)
       klass = Kernel.const_get(controller)
       raise "#{controller} is not a FayeRouter::Controller" unless klass <= FayeRouter::Controller
 
-      klass.new channel, message, request
+      klass.new type, channel, message, request
     end
   end
 end
