@@ -1,0 +1,51 @@
+<html>
+<head>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="../../pubsub/client.js"></script>
+  <script type="text/javascript">
+    var host = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+    var faye_client = new Faye.Client(host + '/pubsub');
+
+    $(function() {
+      $("#btn_send").click(function() {
+        submit_form();
+      });
+      $("#btn_subscribe").click(function() {
+        subscribe_channel();
+      });
+    });
+
+    var submit_form = function() {
+      var channel = $("#channel").val();
+      var event   = $("#event").val();
+      var message = $("#message").val();
+      var publication = faye_client.publish(channel, { event: event, text: message });
+      publication.then(function() {
+        alert("Message published");
+      }, function(error) {
+        alert("Message publication failed: " + error.message);
+      });
+    };
+    var subscribe_channel = function() {
+      var channel = $("#channel").val();
+      var subscription = faye_client.subscribe(channel, function(message) {
+      });
+      subscription.then(function() {
+        alert("Channel subscribed");
+      }, function(error) {
+        alert("Channel subscription failed: " + error.message);
+      });
+    };
+  </script>
+</head>
+
+<body>
+<form id="submitter_form" name="submitter">
+  <label for="channel">Channel:</label> <input id="channel" name="channel" type="text"><br/>
+  <label for="event">Event:</label> <input id="event" name="event" type="text"><br/>
+  <label for="message">Message:</label> <input id="message" name="message" type="text"><br/>
+  <button id="btn_send" type="button">Send</button>
+  <button id="btn_subscribe" type="button">Subscribe</button>
+</form>
+</body>
+</html>
