@@ -39,16 +39,27 @@ module FayeRouter
           next unless type == :all || type == r.type
 
           # match channel with current route
-          matched = cached_match[r.pattern]
-          matched = cached_match[r.pattern] = r.channel_matches? channel if matched.nil?
+          if cached_match.has_key? r.pattern
+          else
 
-          next if matched === false
+          end
+          matched = if cached_match.has_key? r.pattern
+                      cached_match[r.pattern]
+                    else
+                      cached_match[r.pattern] = r.match_channel channel
+                    end
+
+          next if matched.nil?
 
           # check channel matcher
-          return r if r.exec_matcher?(message, request)
+          if r.exec_matcher?(message, request)
+            # convert matches to route_params hash
+            params = Hash[matched.names.map { |n| [n.to_sym, matched[n]] }]
+            return r, params
+          end
         end
 
-        @default
+        return @default, Hash.new
       end
     end
 

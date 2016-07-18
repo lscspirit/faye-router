@@ -31,6 +31,8 @@ router.routes do
     publish match: EventMatcher.new('event_three'), allow: :block
   end
 
+  publish '/channel_3/:single_param/:rest_params*', controller: 'ChannelController', action: :route_params
+
   subscribe '/channel_1', controller: 'ChannelController', action: :subscription
   subscribe '*', allow: :block
 

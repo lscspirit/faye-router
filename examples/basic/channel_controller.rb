@@ -19,6 +19,10 @@ class ChannelController < FayeRouter::Controller
     info "subscribing to #{channel}"
   end
 
+  def route_params
+    info "Params: #{params[:single_param]} - #{params[:rest_params]}"
+  end
+
   private
 
   def before_processing

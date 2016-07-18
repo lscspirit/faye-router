@@ -32,8 +32,8 @@ module FayeRouter
         end
       end
 
-      def channel_matches?(channel)
-        !!(channel =~ @regex)
+      def match_channel(channel)
+        @regex.match channel
       end
 
       def exec_matcher?(message, request)
@@ -44,7 +44,11 @@ module FayeRouter
       private
 
       def self.parse_to_regex(pattern)
-        escaped = Regexp.escape(pattern).gsub('\*','.*?')
+        escaped = Regexp.escape pattern
+        escaped = escaped.gsub /:(\w*)\\\*/, '(?<\1>.*)'
+        escaped = escaped.gsub(/:(\w*)/) { "(?<#{$1}>[^\\\\\\/]*)" }
+        escaped = escaped.gsub '\*','.*?'
+
         Regexp.new "^#{escaped}$", Regexp::IGNORECASE
       end
     end
