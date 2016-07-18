@@ -9,8 +9,7 @@ module FayeRouter
         @regex        = Route::parse_to_regex pattern
         @controller   = options[:controller]
         @action       = options[:action]
-        @matcher      = options[:matcher]
-        @matcher_args = options[:matcher_args]
+        @matcher      = options[:match]
         @allow        = options[:allow] || :route
 
         # Validations
@@ -23,12 +22,8 @@ module FayeRouter
           raise ArgumentError, 'Invalid :allow value. Must be one of :block, :pass, :route'
         end
 
-        unless @matcher.nil? || @matcher.is_a?(Proc)
-          raise ArgumentError, 'Matcher must be a Proc'
-        end
-
-        if options.has_key?(:matcher_args) && @matcher.nil?
-          raise ArgumentError, 'A matcher must be specified if :matcher_args is present'
+        unless @matcher.nil? || @matcher.is_a?(FayeRouter::RouteMatcher)
+          raise ArgumentError, 'Matcher must be a RouteMatcher'
         end
 
         if @allow == :route
@@ -43,10 +38,7 @@ module FayeRouter
 
       def exec_matcher?(message, request)
         return true if @matcher.nil?
-        base = OpenStruct.new(message: message, request: request)
-        args = @matcher_args ? [@matcher_args].flatten : nil
-
-        args.nil? ? base.instance_exec(&@matcher) : base.instance_exec(*args, &@matcher)
+        @matcher.match message, request
       end
 
       private

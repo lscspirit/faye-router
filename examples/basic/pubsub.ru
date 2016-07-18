@@ -11,15 +11,24 @@ Faye.logger.level = Logger::INFO
 
 Faye::WebSocket.load_adapter 'thin'
 
-event_matcher = ->(event) { message['data'] && message['data']['event'] == event }
+class EventMatcher < FayeRouter::RouteMatcher
+  def initialize(event)
+    @event = event
+  end
+
+  def match(message, request)
+    message['data'] && message['data']['event'] == @event
+  end
+end
+
 router = FayeRouter::Router.new
 router.routes do
   publish '/channel_1', controller: 'ChannelController', action: :channel_1
 
   channel '/channel_2', controller: 'ChannelController' do
-    publish matcher: event_matcher, matcher_args: 'event_one', action: :channel_2_event_one
-    publish matcher: event_matcher, matcher_args: 'event_two', action: :channel_2_event_two
-    publish matcher: event_matcher, matcher_args: 'event_three', allow: :block
+    publish match: EventMatcher.new('event_one'), action: :channel_2_event_one
+    publish match: EventMatcher.new('event_two'), action: :channel_2_event_two
+    publish match: EventMatcher.new('event_three'), allow: :block
   end
 
   subscribe '/channel_1', controller: 'ChannelController', action: :subscription
