@@ -65,7 +65,7 @@ module FayeRouter
     end
 
     def spawn_controller(controller, type, channel, route_params, message, request)
-      klass = Kernel.const_get(controller)
+      klass = controller.is_a?(Class) ? controller : Kernel.const_get(controller.to_s)
       raise "#{controller} is not a FayeRouter::Controller" unless klass <= FayeRouter::Controller
 
       klass.new type, channel, route_params, message, request
