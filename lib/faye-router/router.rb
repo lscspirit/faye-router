@@ -15,7 +15,7 @@ module FayeRouter
     def incoming(message, request, callback)
       begin
         route_message message, request
-      rescue => ex
+      rescue Exception => ex
         # in case of runtime error, log the stack trace and return an '_unknown_error' error to the client
         fatal ex.message + "\n  " + ex.backtrace.join("\n  ")
         message['error'] = bayeux_error :server_error, 'Unknown error', 'faye-router'
